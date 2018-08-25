@@ -6,7 +6,7 @@ var qqmapsdk;
 Page({
 	data: {
 		filterId: 1,
-		address: '',
+		address: '定位中...',
 		banners: [
 			{
 				id: 3,
@@ -149,11 +149,10 @@ Page({
 						longitude: res.longitude
 					},
 					success: function (addressRes) {
-						var addresss = addressRes.result.formatted_addresses.recommend;
+						var address = addressRes.result.formatted_addresses.recommend;
 						that.setData({
-							address: addresss
+							address: address
 						})
-						console.log('---------------------address' + address);
 					}
 				})
 			}
