@@ -1,9 +1,12 @@
 var app = getApp();
 var server = require('../../utils/server');
+// 引入SDK核心类
+var QQMapWX = require('../../utils/qqmap-wx-jssdk.js');
+var qqmapsdk;
 Page({
 	data: {
 		filterId: 1,
-		address: '定位中…',
+		address: '',
 		banners: [
 			{
 				id: 3,
@@ -129,32 +132,35 @@ Page({
 		shops: app.globalData.shops
 	},
 	onLoad: function () {
-		var self = this;
+		var that = this
+		// 实例化腾讯地图API核心类
+		qqmapsdk = new QQMapWX({
+			key: 'SX2BZ-6J4W3-QTT3R-YRPP7-CMYYE-LJFRQ' // 必填
+		});
+
+		//1、获取当前位置坐标
 		wx.getLocation({
-			type: 'gcj02',
+			type: 'wgs84',
 			success: function (res) {
-				var latitude = res.latitude;
-				var longitude = res.longitude;
-				server.getJSON('/waimai/api/location.php', {
-					latitude: latitude,
-					longitude: longitude
-				}, function (res) {
-					console.log(res)
-					if (res.data.status != -1) {
-						self.setData({
-							address: res.data.result.address_component.street_number
-						});
-					} else {
-						self.setData({
-							address: '定位失败'
-						});
+				//2、根据坐标获取当前位置名称，显示在顶部:腾讯地图逆地址解析
+				qqmapsdk.reverseGeocoder({
+					location: {
+						latitude: res.latitude,
+						longitude: res.longitude
+					},
+					success: function (addressRes) {
+						var addresss = addressRes.result.formatted_addresses.recommend;
+						that.setData({
+							address: addresss
+						})
+						console.log('---------------------address' + address);
 					}
-				});
+				})
 			}
 		})
 	},
-	onShow: function () {
-	},
+	onShow: function () { },
+	onReady: function () { },
 	onScroll: function (e) {
 		if (e.detail.scrollTop > 100 && !this.data.scrollDown) {
 			this.setData({
@@ -167,7 +173,7 @@ Page({
 		}
 	},
 	tapSearch: function () {
-		wx.navigateTo({url: 'search'});
+		wx.navigateTo({ url: 'search' });
 	},
 	toNearby: function () {
 		var self = this;
